@@ -89,7 +89,7 @@ election = pd.read_csv("https://raw.githubusercontent.com/rfordatascience/tidytu
 
 Using any method you choose from either language, fill in the following table.
 
-Language used: <R>
+Language used: R
 
 Make sure your terms match the language you're using and the code you provided above.
 If you use code to get these values (which is probably a good idea), please use the code chunks provided here:
@@ -197,7 +197,7 @@ Use the grammar of graphics to identify the components of the chart here, which 
     -   x = Date
     -   group = county_name
 
--   coordinate system:
+-   coordinate system: cartesian
 
 -   y axis scale: continous
 
@@ -211,7 +211,7 @@ Write code in R or python to create a chart like that shown at the beginning of 
 Make sure your axes are labeled (5 pts) and your chart has a title (5 pts).
 Include your plot in this document and make sure you have a figure caption that describes what someone should notice in the chart (5 pts) You may do this either by modifying the chunk options or by using `include=F` and manually including the picture with a caption.
 
-```{r,fig.cap = 'Figure 1: This plot shows the change in polling locations throughout each election cycle. This allows us to see how the number of polling locations changes in counties over time.'}
+```{r,fig.cap = 'Figure 1: This plot shows the change in polling locations throughout each election cycle. This allows us to see how the number of polling locations changes in counties in North Carolina over time.'}
 clean_polling_g <- polling %>%
   filter(state == my_state) %>%
   filter(address != "DO NOT USE") %>%
@@ -304,9 +304,9 @@ address_parser <- function(x){
     street <- split[2]
   }
   if (nchar(gsub("[^0-9]+", "", str[2]))>5){
-    secsplit <- str_split(str[2]," ",2,simplify = TRUE)
-    building_number <- secsplit[1]
-    street <- paste(street,secsplit[2])
+    secsplit <- str_split(str[2]," ",3,simplify = TRUE)
+    building_number <- secsplit[2]
+    street <- paste(street,secsplit[3])
     
   } else if(str_detect(str[2],"[0-9]")){
     secsplit1 <- str_split(str[2]," ",3,simplify = TRUE)
