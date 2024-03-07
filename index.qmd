@@ -1,15 +1,20 @@
 ---
 title: 251 Midterm Exam
-author: Firstname Lastname
+author: Tyler Davis
 date: '2024-03-07'
 execute:
   error: false
 categories:
 - Exam
 - Week07
+editor: 
+  markdown: 
+    wrap: sentence
 ---
 
-In this exam, you'll be using data collected about US polling places. The [Center for Public Integrity](https://publicintegrity.org/) assembled this data using open records requests and contact with state or county election officials. Full documentation is available on the [github repository for the data](https://github.com/PublicI/us-polling-places) - each state's details can be found in a README file for that state; there is also a machine-readable `manifest.yaml` file for each state provided.
+In this exam, you'll be using data collected about US polling places.
+The [Center for Public Integrity](https://publicintegrity.org/) assembled this data using open records requests and contact with state or county election officials.
+Full documentation is available on the [github repository for the data](https://github.com/PublicI/us-polling-places) - each state's details can be found in a README file for that state; there is also a machine-readable `manifest.yaml` file for each state provided.
 
 We will start out by using data assembled by the TidyTuesday project, but will eventually get to the raw data as well.
 
@@ -17,15 +22,22 @@ The raw CSV data is available at https://raw.githubusercontent.com/rfordatascien
 
 ```{r r-setup}
 # load any R packages you use in this chunk
-
+library(skimr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(lubridate)
+library(purrr)
 ```
 
 ```{python py-setup}
 # load any python packages you use in this chunk
-
+import pandas as pd
 ```
 
 # Data Input - Polling Places
+
 (30 pts)
 
 ## Data File Inspection
@@ -41,17 +53,23 @@ election_date,state,county_name,jurisdiction,jurisdiction_type,precinct_id,preci
 2020-11-03,AL,AUTAUGA,AUTAUGA,county,NA,CAMELLIA BAPTIST CH,NA,election_day,CAMELLIA BAPTIST CH,"201 WOODVALE ROAD, PRATTVILLE, AL 36067",NA,ORR,2020-10-21,NA
 ```
 
-1.  What is the file delimiter? (1 pt)    
-<Delete this and replace with your answer>
+1.  What is the file delimiter?
+    (1 pt)\
+    \<The delimiter of this file is a comma.\>
 
-2.  What is the header? (1 pt)    
-<Delete this and replace with your answer>
+2.  What is the header?
+    (1 pt)\
+    \<the header is election_date,state,county_name,jurisdiction,jurisdiction_type,precinct_id,precinct_name,polling_place_id,location_type,name,address,notes,source,source_date,source_notes.
+    These will be the headers of each of the columns \>
 
-3.  How many columns will the data have when it is read in using R or Python? (1 pt)    
-<Delete this and replace with your answer>
+3.  How many columns will the data have when it is read in using R or Python?
+    (1 pt)\
+    \<this will have 15 columns\>
 
-4.  How is the data stored differently in the address field compared to the name field (1 pt), and why is this different handling necessary (1 pt)?    
-<Delete this and replace with your answer>
+4.  How is the data stored differently in the address field compared to the name field (1 pt), and why is this different handling necessary (1 pt)?\
+    \<The address is stored as a string and the name is not, this is due to the fact that this groups the entire address together.
+    This makes handling the address much more difficult as to separate it we have to break up the string and make it individual pieces whereas the name is already by itself so it is easy to work with.
+    \>
 
 ## Reading the Data
 
@@ -60,130 +78,175 @@ Read in the data in R (5 pts) and in python (5 pts).
 Make sure to load any packages which are necessary to run your code in the setup chunks at the beginning of the document.
 
 ```{r r-read-data}
-
+polling <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-16/polling_places.csv")
 ```
 
 ```{python py-read-data}
-
+election = pd.read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-16/polling_places.csv")
 ```
 
 ## Summarize the Data
 
 Using any method you choose from either language, fill in the following table.
 
-Language used: <Fill in>
+Language used: <R>
 
-Make sure your terms match the language you're using and the code you provided above. If you use code to get these values (which is probably a good idea), please use the code chunks provided here:
+Make sure your terms match the language you're using and the code you provided above.
+If you use code to get these values (which is probably a good idea), please use the code chunks provided here:
 
 ```{r r-data-summary-code}
-
+summary_polling <- skim(polling)
+summary_polling
+summary(polling)
 ```
 
 ```{python py-data-summary-code}
 
 ```
 
-
 When computing the number of unique values, exclude missing values.
 
-| Column Name       | Data Type (5 pts) | # missing values (5 pts) | # unique values (5 pts) |
-|-------------|----------|-------------------------|-------------------------|
-| election_date     |           |                          |                                     |
-| state             |           |                          |                                     |
-| county_name       |           |                          |                                     |
-| jurisdiction      |           |                          |                                     |
-| jurisdiction_type |           |                          |                                     |
-| precinct_id       |           |                          |                                     |
-| precinct_name     |           |                          |                                     |
-| polling_place_id  |           |                          |                                     |
-| location_type     |           |                          |                                     |
-| name              |           |                          |                                     |
-| address           |           |                          |                                     |
-| notes             |           |                          |                                     |
-| source            |           |                          |                                     |
-| source_date       |           |                          |                                     |
-| source_notes      |           |                          |                                     |
+| Column Name       | Data Type (5 pts) | \# missing values (5 pts) | \# unique values (5 pts) |
+|-----------------|-----------------|--------------------|--------------------|
+| election_date     | charecter         | 0                         | 7                        |
+| state             | charecter         | 0                         | 39                       |
+| county_name       | charecter         | 114568                    | 1880                     |
+| jurisdiction      | charecter         | 103599                    | 9206                     |
+| jurisdiction_type | charecter         | 60                        | 7                        |
+| precinct_id       | charecter         | 148834                    | 50287                    |
+| precinct_name     | charecter         | 96860                     | 110887                   |
+| polling_place_id  | charecter         | 408178                    | 11145                    |
+| location_type     | charecter         | 192830                    | 6                        |
+| name              | charecter         | 75                        | 105985                   |
+| address           | charecter         | 2966                      | 15319                    |
+| notes             | charecter         | 416312                    | 9614                     |
+| source            | charecter         | 0                         | 4                        |
+| source_date       | charecter         | 0                         | 36                       |
+| source_notes      | charecter         | 425353                    | 4                        |
 
 : Summary of Polling Data
 
 # Data Cleaning - Polling Places over Time
+
 (50 pts)
 
-For this part of the exam, you'll use your student ID to get the state you'll be working with. 
+For this part of the exam, you'll use your student ID to get the state you'll be working with.
+
 ```{r student-id-state-assign}
-my_nuid <- 96582245 # Change this value to your NUID
+my_nuid <- 91824517 # Change this value to your NUID
 state_ids <- readRDS("state-ids.RDS")
 my_state <- state_ids$state[my_nuid%%37]
 print(my_state)
 ```
 
-Your end goal is to get a plot of the number of available polling places in each election, with separate lines for each jurisdiction (e.g. county) within your state. 
+Your end goal is to get a plot of the number of available polling places in each election, with separate lines for each jurisdiction (e.g. county) within your state.
 
 ## Steps
+
 (10 pts)
 
 Write out the steps (in plain language) required to get from the polling place data provided [here](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-16/polling_places.csv) to the data you need to create your plot.
-Make sure to remove polling places which do not make sense - e.g. those with an address consisting of just the state name, or those named "DO NOT USE". 
+Make sure to remove polling places which do not make sense - e.g. those with an address consisting of just the state name, or those named "DO NOT USE".
 
-For each step, identify the data manipulation verb you will use, and any variables you will pass in as arguments. 
-Fill in the following table when you are finished. 
-Add new rows by moving to a new line, and separate each cell in the table with ` | ` (spaces matter). `|` is on the key above the enter key and shares a key with `\` (backslash). You will need to hold shift down.
+For each step, identify the data manipulation verb you will use, and any variables you will pass in as arguments.
+Fill in the following table when you are finished.
+Add new rows by moving to a new line, and separate each cell in the table with `|` (spaces matter).
+`|` is on the key above the enter key and shares a key with `\` (backslash).
+You will need to hold shift down.
 
-Step # | Verb | Arguments
---- | --- | ---
- 1 | ... | ... <!-- replace this line -->
-
+| Step \# | Verb      | Arguments                          |
+|---------|-----------|------------------------------------|
+| 1       | filter    | state by my_state                  |
+| 2       | filter    | address by not use and my_state    |
+| 3       | mutate    | election date to make it continous |
+| 4       | group_by  | county and election_date           |
+| 5       | summarize | num_pol = length(address)          |
 
 ## Code
+
 (10 pts)
+
+```{r}
+clean_polling <- polling %>%
+  filter(state == my_state) %>%
+  filter(address != "DO NOT USE") %>%
+  filter(address != my_state) %>%
+  mutate(election_date = ymd(election_date))%>%
+  group_by(county_name,election_date) %>%
+  summarize(num_pol = length(address),address)
+head(clean_polling)
+```
 
 Write code in R or python to execute the steps you outlined above.
 
 ## Chart Description
+
 (7 pts)
 
 Use the grammar of graphics to identify the components of the chart here, which provides the data for Wisconsin.
 ![Wisconsin counties where the number of polling places changed, 2012-2020](wisconsin-example.jpg){width="50%"}
 
-- geom: 
-- aesthetics: (list at least 3)
+-   geom: line
 
-  - 
-  - 
-  - 
-- coordinate system: 
-- y axis scale: 
-- x axis scale: 
+-   aesthetics: (list at least 3)
 
+    -   y = number of polling locations
+    -   x = Date
+    -   group = county_name
+
+-   coordinate system:
+
+-   y axis scale: continous
+
+-   x axis scale: continous (possibly Date)
 
 ## Chart
+
 (20 pts)
 
-Write code in R or python to create a chart like that shown at the beginning of this example (5 pts). 
+Write code in R or python to create a chart like that shown at the beginning of this example (5 pts).
 Make sure your axes are labeled (5 pts) and your chart has a title (5 pts).
-Include your plot in this document and make sure you have a figure caption that describes what someone should notice in the chart (5 pts)
-You may do this either by modifying the chunk options or by using `include=F` and manually including the picture with a caption.
+Include your plot in this document and make sure you have a figure caption that describes what someone should notice in the chart (5 pts) You may do this either by modifying the chunk options or by using `include=F` and manually including the picture with a caption.
+
+```{r,fig.cap = 'Figure 1: This plot shows the change in polling locations throughout each election cycle. This allows us to see how the number of polling locations changes in counties over time.'}
+clean_polling_g <- polling %>%
+  filter(state == my_state) %>%
+  filter(address != "DO NOT USE") %>%
+  filter(address != my_state) %>%
+  mutate(election_date = ymd(election_date))%>%
+  group_by(county_name,election_date) %>%
+  summarize(num_pol = length(address))
+head(clean_polling_g)
+  ggplot(clean_polling_g, aes(election_date,num_pol,group = county_name))+geom_line()+ggtitle("Changes in Number of Polling Location in North Carolina") + xlab("Date") + ylab("Number of Polling Locations") + scale_y_continuous(trans="log10")
+```
 
 ## Modifications
 
-Evaluate the chart you created for comprehensibility and accessibility. (1 pt)
+Evaluate the chart you created for comprehensibility and accessibility.
+(1 pt)
 
-What modifications might you add to this chart to make it clearer and more understandable? (2 pts)
+This graph is honestly really tough to read because you can't really tell which counties represent each line.Also as a lot of the lines intersect each other it creates almost like a visual distortion and it is hard to see how each line changes as they cross so many other lines.
 
+What modifications might you add to this chart to make it clearer and more understandable?
+(2 pts)
 
+If I were to change this graph I may facet it so that all of the counties have their own graph and so you can see the trends of the voting locations of each individual county.When they are all put on the same graph it does make it tough to see how one county differs from another.
 
 # Data Processing
+
 (20 pts)
 
-You want to mail a letter to every polling place in the state you were assigned. In order to do this, you need to separate out the pieces of the address: building number, street, city, state, and zip code. 
-Note that not all addresses will have all of these components - in Alaska, for example, there are often not street numbers or even names. 
+You want to mail a letter to every polling place in the state you were assigned.
+In order to do this, you need to separate out the pieces of the address: building number, street, city, state, and zip code.
+Note that not all addresses will have all of these components - in Alaska, for example, there are often not street numbers or even names.
 
 ## Function Steps
+
 (5 pts)
 
 Use the following addresses to think through the steps you will need to accomplish this task.
 
-```
+```         
 Tatitlek, AK 99677
 First Street, Cordova, AK 99574
 105 ICE ST, MENASHA, WI 54952-3223
@@ -195,21 +258,80 @@ COMMUNITY CENTER, 1168 HWY 84, SILAS, AL 36919
 ```
 
 Write out the steps your function will need to accomplish in plain language.
-
+1.
+The first step is going to be breaking the string up by commas 2.
+The next step would be to split up the state and the zip code 3.
+Then you would have to find a way to seperate the building number from the street 4.
+finally you would have to put all of these into a data frame with proper column labels.
 
 ## Function Code - Single Address
+
 (5 pts)
 
 Write a function, `address_parser`, which can handle a single address and return a data structure containing each piece of the address, with NAs for pieces which are not matched.
 
 (change this chunk to python if you'd prefer to use python over R for this task)
+
 ```{r single-address-parser}
 
+
+
+address_parser <- function(x){
+  building_number <- NA
+  street <- NA
+  city <- NA
+  state <- NA
+  zip <- NA
+  str <- str_split(x,",",simplify = TRUE)
+  if(str_count(str[1], "\\w+") <= 1){
+    city <- str[1]
+  } else if(!str_detect(str[1],"[0-9]")){
+    street <- str[1]
+    
+  } else {
+    split <- str_split(str[1]," ",2,simplify = TRUE)
+    building_number <- split[1]
+    street <- split[2]
+  }
+  if (nchar(gsub("[^0-9]+", "", str[2]))>5){
+    secsplit <- str_split(str[2]," ",2,simplify = TRUE)
+    building_number <- secsplit[1]
+    street <- paste(street,secsplit[2])
+    
+  } else if(str_detect(str[2],"[0-9]")){
+    secsplit1 <- str_split(str[2]," ",3,simplify = TRUE)
+    state <- secsplit1[2]
+    zip <- secsplit1[3]
+  } else if(str_count(str[2], "\\w+") <= 1){
+    city <- str[2]
+  } else{
+    street <- paste(str[2],street)
+  }
+  if(str_detect(str[3],"[0-9]")&str[3] %in% str){
+    secsplit2 <- str_split(str[3]," ",3,simplify = TRUE)
+    state <- secsplit2[2]
+    zip <- secsplit2[3]
+  } else if(str[3] %in% str){
+    city <- str[3]
+  }
+  if (str_detect(str[4],"[0-9]")&str[4] %in% str){
+    secsplit2 <- str_split(str[4]," ",3,simplify = TRUE)
+    state <- secsplit2[2]
+    zip <- secsplit2[3]
+  }
+  address <- data.frame(building_number = c(building_number),
+                        street = c(street),
+                        city = c(city),
+                        state = c(state),
+                        zipcode = c(zip))
+
+  return(address)
+}
 ```
 
-
-This chunk will test your function on the addresses provided as examples. 
+This chunk will test your function on the addresses provided as examples.
 (change this chunk to python if you used python above)
+
 ```{r single-address-parser-test, error = T}
 address_parser("Tatitlek, AK 99677")
 address_parser("First Street, Cordova, AK 99574")
@@ -222,17 +344,22 @@ address_parser("COMMUNITY CENTER, 1168 HWY 84, SILAS, AL 36919")
 ```
 
 ## Function Code - Vector
+
 (5 pts)
 
 Write a function, `address_vec`, which can parse a vector of addresses and return a data frame with columns corresponding to each piece of the address.
 
 (change this chunk to python if you'd prefer to use python over R for this task)
-```{r vector-address-parser}
 
+```{r vector-address-parser}
+address_vec <- function(x){
+  map_dfr(x,address_parser)
+}
 ```
 
+This chunk will test your function on the addresses provided as examples.
+Delete whichever chunk corresponds to the language you didn't use.
 
-This chunk will test your function on the addresses provided as examples. Delete whichever chunk corresponds to the language you didn't use. 
 ```{r r-vector-address-parser-test, error = T}
 test_vec <- c("Tatitlek, AK 99677", "First Street, Cordova, AK 99574", "105 ICE ST, MENASHA, WI 54952-3223", "1025 W 5TH AVE, OSHKOSH, WI 54902", "1702 COUNTY ROAD 40 W, PRATTVILLE, AL 36067", "5281 HIGHWAY 29, CORINTH VFD (PEROTE STATION), BANKS, AL 36005", "713 W. MOUNTAIN AVENUE, JACKSONVILLE, AL 36265", "COMMUNITY CENTER, 1168 HWY 84, SILAS, AL 36919")
 address_vec(test_vec)
@@ -249,7 +376,10 @@ Use your function to parse a vector of the unique polling place addresses in you
 (5 pts)
 
 ```{r r-function-eval}
-
+head(address_vec(unique(clean_polling$address)))
 ```
 
-Where did your function have issues, if it did? (5 pts)
+Where did your function have issues, if it did?
+(5 pts) The issues that my function had was the length of the function.
+It is definitely not the most effiecient way to complete this task.
+I could not figure out for the longest time how to make the regular expressions to compelete the str_match fucntion which would have done it for me so I had to manually go in a use the logic statements to sort each individual piece by what it contained after splitting it up using the str_split.
