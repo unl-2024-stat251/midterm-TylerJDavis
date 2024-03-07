@@ -59,12 +59,12 @@ election_date,state,county_name,jurisdiction,jurisdiction_type,precinct_id,preci
 
 2.  What is the header?
     (1 pt)\
-    \<the header is election_date,state,county_name,jurisdiction,jurisdiction_type,precinct_id,precinct_name,polling_place_id,location_type,name,address,notes,source,source_date,source_notes.
+    \<The header is election_date,state,county_name,jurisdiction,jurisdiction_type,precinct_id,precinct_name,polling_place_id,location_type,name,address,notes,source,source_date,source_notes.
     These will be the headers of each of the columns \>
 
 3.  How many columns will the data have when it is read in using R or Python?
     (1 pt)\
-    \<this will have 15 columns\>
+    \<This will have 15 columns\>
 
 4.  How is the data stored differently in the address field compared to the name field (1 pt), and why is this different handling necessary (1 pt)?\
     \<The address is stored as a string and the name is not, this is due to the fact that this groups the entire address together.
@@ -177,6 +177,9 @@ clean_polling <- polling %>%
 head(clean_polling)
 ```
 
+*Comment* = I added the address into this data filtration as I wanted to use this on the last step as well.
+The graph below does contain the proper data manipulation for the graph this one above does too it just contains the addresses as well.
+
 Write code in R or python to execute the steps you outlined above.
 
 ## Chart Description
@@ -258,10 +261,17 @@ COMMUNITY CENTER, 1168 HWY 84, SILAS, AL 36919
 ```
 
 Write out the steps your function will need to accomplish in plain language.
-1.
-The first step is going to be breaking the string up by commas 2.
-The next step would be to split up the state and the zip code 3.
-Then you would have to find a way to seperate the building number from the street 4.
+
+1\.
+The first step is going to be breaking the string up by commas
+
+2\.
+The next step would be to split up the state and the zip code
+
+3\.
+Then you would have to find a way to separate the building number from the street
+
+4\.
 finally you would have to put all of these into a data frame with proper column labels.
 
 ## Function Code - Single Address
@@ -365,9 +375,7 @@ test_vec <- c("Tatitlek, AK 99677", "First Street, Cordova, AK 99574", "105 ICE 
 address_vec(test_vec)
 ```
 
-```{python py-vector-address-parser-test, error = T}
-test_vec = ["Tatitlek, AK 99677", "First Street, Cordova, AK 99574", "105 ICE ST, MENASHA, WI 54952-3223", "1025 W 5TH AVE, OSHKOSH, WI 54902", "1702 COUNTY ROAD 40 W, PRATTVILLE, AL 36067", "5281 HIGHWAY 29, CORINTH VFD (PEROTE STATION), BANKS, AL 36005", "713 W. MOUNTAIN AVENUE, JACKSONVILLE, AL 36265", "COMMUNITY CENTER, 1168 HWY 84, SILAS, AL 36919"]
-address_vec(test_vec)
+```{}
 ```
 
 ## Function Evaluation
@@ -380,6 +388,8 @@ head(address_vec(unique(clean_polling$address)))
 ```
 
 Where did your function have issues, if it did?
-(5 pts) The issues that my function had was the length of the function.
-It is definitely not the most effiecient way to complete this task.
-I could not figure out for the longest time how to make the regular expressions to compelete the str_match fucntion which would have done it for me so I had to manually go in a use the logic statements to sort each individual piece by what it contained after splitting it up using the str_split.
+(5 pts)
+
+The issues that my function had was the length of the function.
+It is definitely not the most efficient way to complete this task.
+I could not figure out for the longest time how to make the regular expressions to complete the str_match function which would have done it for me so I had to manually go in a use the logic statements to sort each individual piece by what it contained after splitting it up using the str_split.
